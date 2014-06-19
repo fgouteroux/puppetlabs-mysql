@@ -1,0 +1,15 @@
+#!/bin/bash
+
+service_username=<%= @service_username %>
+service_password=<%= @service_password %>
+mysql_master=<%= @mysql_master %>
+root_password=<%= @root_password %>
+
+logfile=$(mysql --user=${service_username} --password=${service_password} --host=${mysql_master} --skip-column-names --no-auto-rehash --execute="SHOW MASTER STATUS;" | awk '{print $1}')
+position=$(mysql --user=${service_username} --password=${service_password} --host=${mysql_master} --skip-column-names --no-auto-rehash --execute="SHOW MASTER STATUS;" | awk '{print $2}')
+
+
+mysql --user=root --password=${root_password} --execute="SLAVE STOP;"
+mysql --user=root --password=${root_password} --execute="CHANGE MASTER TO MASTER_HOST='${mysql_master}', MASTER_USER='${service_username}', MASTER_PASSWORD='${service_password}', MASTER_LOG_FILE='${logfile}', MASTER_LOG_POS=${position};"
+mysql --user=root --password=${root_password} --execute="START SLAVE;"
+
