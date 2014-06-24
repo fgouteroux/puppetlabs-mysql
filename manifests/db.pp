@@ -22,7 +22,6 @@ define mysql::db (
     ensure   => $ensure,
     charset  => $charset,
     collate  => $collate,
-    provider => 'mysql',
     require  => [ Class['mysql::server'], Class['mysql::client'] ],
   }
   ensure_resource('mysql_database', $dbname, $db_resource)
@@ -30,7 +29,6 @@ define mysql::db (
   $user_resource = {
     ensure        => $ensure,
     password_hash => mysql_password($password),
-    provider      => 'mysql',
     require       => Class['mysql::server'],
   }
   ensure_resource('mysql_user', "${user}@${host}", $user_resource)
@@ -38,7 +36,6 @@ define mysql::db (
   if $ensure == 'present' {
     mysql_grant { "${user}@${host}/${table}":
       privileges => $grant,
-      provider   => 'mysql',
       user       => "${user}@${host}",
       table      => $table,
       require    => [Mysql_database[$dbname], Mysql_user["${user}@${host}"], Class['mysql::server'] ],
